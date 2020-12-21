@@ -9,4 +9,10 @@ import pandas as pd
 import pandas_datareader.data as web
 import matplotlib as pltgi
 
-print(config.STOCKS)
+def getStocks(STOCKS):
+    #Carico i dati relativi alle azioni.
+    #Se presenti in cache evito di scaricarli.
+    for stock in STOCKS:
+        print(stock)
+
+getStocks(config.STOCKS)
