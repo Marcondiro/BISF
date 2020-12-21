@@ -6,7 +6,6 @@ STOCKS = [
     "BNTX", #BioNTech
     "MRNA"  #Moderna
 ]
-PERIOD = [
-    "2018-10-01",   #Start
-    "2020-10-01"    #End
-]
+
+START = "2018-10-01"
+END = "2020-10-01"
