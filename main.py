@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-s
+#%%
 
 #Config
 import config
@@ -12,14 +13,24 @@ import matplotlib as pltgi
 def getStocks(STOCKS, START, END):
     #Carico i dati relativi alle azioni.
     #Se presenti in cache evito di scaricarli.
-    data = {}
+    CACHE_DIR = "./stocks_cache/"
+    dataFrame = None
     for stock in STOCKS:
         try:
-            data[stock] = pd.read_csv("./stocks_cache/" + stock +"_"+ START +
-                "_" + END + '.csv')
+            s = pd.read_csv(CACHE_DIR+stock+"_"+START+"_"+END+'.csv')
+            print(stock + " loaded from cache.")
         except:
-            data[stock] = web.get_data_yahoo(stock, START, END)
-            data[stock].to_csv()
-        print(data[stock])
+            s = web.get_data_yahoo(stock, START, END)
+            s.to_csv(CACHE_DIR + stock + "_" + START +"_"+END+'.csv')
+            print(stock + " downloaded from Yahoo.")
+        s.index =  s.Date
+        s = s[["Adj Close"]]
+        s.columns = s.columns + "_" + stock
+        if dataFrame is None:
+            dataFrame = s
+        else:
+            dataFrame = dataFrame.join(s)
+    return dataFrame
 
-getStocks(config.STOCKS, config.START, config.END)
+dataFrame = getStocks(config.STOCKS, config.START, config.END)
+dataFrame.plot()
