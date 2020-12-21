@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-s
 
+#Config
+import config
+
+#Packages
 import numpy as np
 import pandas as pd
-pd.core.common.is_list_like = pd.api.types.is_list_like
 import pandas_datareader.data as web
-import matplotlib as plt
+import matplotlib as pltgi
+
+print(config.STOCKS)
