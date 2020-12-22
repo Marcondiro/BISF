@@ -1,3 +1,6 @@
+START = "2018-10-01"
+END = "2020-10-01"
+
 STOCKS = [
     "TSM",  #Taiwan Semiconductor
     "NVDA", #NVIDIA
@@ -7,5 +10,11 @@ STOCKS = [
     "MRNA"  #Moderna
 ]
 
-START = "2018-10-01"
-END = "2020-10-01"
+SECTORS = [
+    "IT",
+    "IT",
+    "Aviation",
+    "Aviation",
+    "Pharma",
+    "Pharma"
+]
