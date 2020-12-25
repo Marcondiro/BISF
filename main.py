@@ -17,13 +17,13 @@ def getStocks(STOCKS, START, END):
     dataFrame = None
     for stock in STOCKS:
         try:
-            s = pd.read_csv(CACHE_DIR+stock+'_'+START+'_'+END+'.csv')
+            s = pd.read_csv(CACHE_DIR+stock+'_'+START+'_'+END+'.csv',
+                index_col=0)
             print(stock + ' loaded from cache.')
         except:
             s = web.get_data_yahoo(stock, START, END)
             s.to_csv(CACHE_DIR + stock + '_' + START +'_'+END+'.csv')
             print(stock + ' downloaded from Yahoo.')
-        s.index =  pd.to_datetime(s.Date)
         s = s[['Adj Close']]
         s.columns = [stock]
         if dataFrame is None:
