@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-s
-#%%
 #Config
+from logging import debug
 import config
+
+#Webapp
+import webapp
 
 #Packages
 from pathlib import Path
@@ -9,6 +12,10 @@ import numpy as np
 import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
+import dash
+import dash_html_components as html
+import dash_core_components as dcc
+from dash.dependencies import Input, Output
 
 def getStocks(STOCKS, START, END):
     #Carico i dati relativi alle azioni.
@@ -56,3 +63,21 @@ plt.tight_layout()
 
 #Diagnostic plots
 #cc_returns.hist(bins = 10)
+
+app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
+app.layout = webapp.layout
+
+@app.callback(dash.dependencies.Output('page-content', 'children'),
+              [dash.dependencies.Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname.lower() == '/descriptiveanalysis':
+        return webapp.descriptive_analysis
+    elif pathname.lower() == '/predictiveanalysis':
+        return webapp.predictive_analysis
+    elif pathname.lower() == '/portfoliomanagement':
+        return webapp.portfolio_management
+    else:
+        return webapp.redirect
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
