@@ -11,8 +11,8 @@ STOCKS = [
 ]
 
 SECTORS = [
-    "IT",
-    "IT",
+    "Tech",
+    "Tech",
     "Aviation",
     "Aviation",
     "Pharma",
