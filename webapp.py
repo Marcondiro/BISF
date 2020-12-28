@@ -1,11 +1,10 @@
-from dash_html_components.Br import Br
-from dash_html_components.Div import Div
-from pandas_datareader.data import Options
 import config
 
 from dash_core_components.Dropdown import Dropdown
 import dash_html_components as html
 import dash_core_components as dcc
+
+SECTORS = list(sorted(set(s['sector'] for s in config.STOCKS)))
 
 css = ['https://www.w3schools.com/w3css/4/w3.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css']
@@ -62,7 +61,7 @@ descriptive_analysis = html.Div([
             html.Div([
                 html.H3('Options'),
                 dcc.RadioItems(
-                    id='returns_radio',
+                    id='returns-radio',
                     options=[
                         {'label': ' Simple', 'value': 'simple'},
                         {'label': ' Compounded', 'value': 'compounded'},
@@ -71,8 +70,23 @@ descriptive_analysis = html.Div([
                     className='w3-container',
                     inputClassName='w3-radio',
                     labelStyle={'display': 'block'},
-                )],
-                className='w3-container w3-cell-middle',
+                ),
+                html.Br(),
+                dcc.Checklist(
+                    id='returns-groupbysector',
+                    options=[{'label': ' Group by sector', 'value': 'True'},],
+                    value=[],
+                    className='w3-container',
+                    inputClassName='w3-check',
+                ),
+                html.Br(),
+                dcc.Dropdown(
+                    id='returns-sector-dropdown',
+                    options=[{'label': s, 'value': s} for s in SECTORS],
+                    value=SECTORS[0]
+                ),
+                ],
+                className='w3-light-grey w3-container w3-cell w3-card',
                 )
             ],
         className='w3-cell-row',

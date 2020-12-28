@@ -84,7 +84,7 @@ def display_page(pathname):
 #home
 @app.callback(Output('home-graph', 'figure'), 
               [Input('home-dropdown', 'value')])
-def update_graph(selected_dropdown_values):
+def update_summary_graph(selected_dropdown_values):
     if selected_dropdown_values != []:
         plot = px.line(stocks_monthly[selected_dropdown_values],
             title='Raw data: Adjusted close')
@@ -92,7 +92,29 @@ def update_graph(selected_dropdown_values):
     return plot
 
 #descriptive_analysis
+@app.callback(Output('returns-graph', 'figure'), 
+              [Input('returns-radio', 'value'),
+              Input('returns-groupbysector', 'value'),
+              Input('returns-sector-dropdown', 'value')
+              ])
+def update_descriptive_graph(radio, groupby ,sector):
+    if groupby == ['True']:
+        plot_stocks = [s['ticker']for s in config.STOCKS if s['sector']==sector]
+    else:
+        plot_stocks = stocks.columns
+    if radio == 'simple':
+        plot = px.line(simple_returns[plot_stocks], title='Simple returns')
+    else:
+        plot = px.line(cc_returns[plot_stocks], title='Continuos compounded returns')
+    return plot
 
+@app.callback(Output('returns-sector-dropdown', 'className'), 
+              [Input('returns-groupbysector', 'value')])
+def show_dropdown(groupby):
+    if groupby == ['True']:
+        return 'w3-show'
+    else:
+        return 'w3-hide'
 
 if __name__ == '__main__':
     app.run_server(debug=True)
