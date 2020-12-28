@@ -66,7 +66,7 @@ descriptive_analysis = html.Div([
                         {'label': ' Simple', 'value': 'simple'},
                         {'label': ' Compounded', 'value': 'compounded'},
                     ],
-                    value='simple',
+                    value='compounded',
                     className='w3-container',
                     inputClassName='w3-radio',
                     labelStyle={'display': 'block'},
@@ -82,15 +82,15 @@ descriptive_analysis = html.Div([
                 html.Br(),
                 dcc.Dropdown(
                     id='returns-sector-dropdown',
-                    options=[{'label': s, 'value': s} for s in SECTORS],
-                    value=SECTORS[0]
+                    options=[{'label': s, 'value': s} for s in SECTORS]
                 ),
                 ],
                 className='w3-light-grey w3-container w3-cell w3-card',
                 )
             ],
-        className='w3-cell-row',
+        className='w3-container w3-cell-row',
     ),
+    #TODO scegliere il diagnostic plot?
 ])
 
 predictive_analysis = html.Div([

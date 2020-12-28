@@ -98,7 +98,7 @@ def update_summary_graph(selected_dropdown_values):
               Input('returns-sector-dropdown', 'value')
               ])
 def update_descriptive_graph(radio, groupby ,sector):
-    if groupby == ['True']:
+    if groupby == ['True'] and sector!=None:
         plot_stocks = [s['ticker']for s in config.STOCKS if s['sector']==sector]
     else:
         plot_stocks = stocks.columns
