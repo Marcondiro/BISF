@@ -9,14 +9,14 @@ layout = html.Div([
     html.Div(
         className='w3-bar w3-blue',
         children=[
-            html.A(children='Descriptive Analisys',
-                href='/DescriptiveAnalisys',
+            html.A(children='Descriptive Analysis',
+                href='/DescriptiveAnalysis',
                 className='w3-bar-item w3-button'),
-            html.A(children='Predictive Analisys',
-                href='PredictiveAnalisys',
+            html.A(children='Predictive Analysis',
+                href='/PredictiveAnalysis',
                 className='w3-bar-item w3-button'),
             html.A(children='Portfolio Management',
-                href='PortfolioManagement',
+                href='/PortfolioManagement',
                 className='w3-bar-item w3-button')
             ]
         ),

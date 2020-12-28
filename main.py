@@ -13,8 +13,8 @@ import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
 import dash
-import dash_html_components as html
-import dash_core_components as dcc
+#import dash_html_components as html
+#import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
 def getStocks(STOCKS, START, END):
@@ -67,8 +67,8 @@ plt.tight_layout()
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
 app.layout = webapp.layout
 
-@app.callback(dash.dependencies.Output('page-content', 'children'),
-              [dash.dependencies.Input('url', 'pathname')])
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname.lower() == '/descriptiveanalysis':
         return webapp.descriptive_analysis
