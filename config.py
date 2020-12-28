@@ -1,20 +1,35 @@
-START = "2018-10-01"
-END = "2020-10-01"
+START = '2018-10-01'
+END = '2020-10-01'
 
 STOCKS = [
-    "TSM",  #Taiwan Semiconductor
-    "NVDA", #NVIDIA
-    "BA",   #Boeing
-    "LUV",  #Southwest Airlines
-    "BNTX", #BioNTech
-    "MRNA"  #Moderna
-]
-
-SECTORS = [
-    "Tech",
-    "Tech",
-    "Aviation",
-    "Aviation",
-    "Pharma",
-    "Pharma"
+    {
+        'ticker': 'TSM',
+        'label': 'Taiwan Semiconductor',
+        'sector': 'Tech'
+    },
+    {
+        'ticker': 'NVDA',
+        'label': 'Nvidia',
+        'sector': 'Tech'
+    },
+    {
+        'ticker': 'BA',
+        'label': 'Boeing',
+        'sector': 'Aviation'
+    },
+    {
+        'ticker': 'LUV',
+        'label': 'Southwest Airlines',
+        'sector': 'Aviation'
+    },
+    {
+        'ticker': 'BNTX',
+        'label': 'BioNTech',
+        'sector': 'Pharma'
+    },
+    {
+        'ticker': 'MRNA',
+        'label': 'Moderna',
+        'sector': 'Pharma'
+    }
 ]

@@ -12,9 +12,8 @@ import numpy as np
 import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
+import plotly.express as px
 import dash
-#import dash_html_components as html
-#import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
 def getStocks(STOCKS, START, END):
@@ -40,8 +39,7 @@ def getStocks(STOCKS, START, END):
             dataFrame = dataFrame.join(s)
     return dataFrame
 
-stocks = getStocks(config.STOCKS, config.START, config.END)
-SECTORS = set(config.SECTORS)
+stocks = getStocks([s['ticker'] for s in config.STOCKS], config.START, config.END)
 stocks_monthly = stocks.groupby(pd.Grouper(freq='M')).mean()
 
 #Adj close
@@ -54,22 +52,26 @@ cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
 cc_returns.plot(grid=True, title='CC returns')
 
 #returns grouped by sector
-fig, axes = plt.subplots(len(SECTORS), 1)
-for i, sector in enumerate(SECTORS):
-    sector_stocks = [ind for ind,s in enumerate(config.SECTORS) if s == sector]
-    cc_returns.iloc[:, sector_stocks].plot(ax=axes[i], sharex=True, grid=True,
-        title=sector)
-plt.tight_layout()
+# SECTORS = set(s['sector'] for s in config.STOCKS)
+# fig, axes = plt.subplots(len(SECTORS), 1)
+# for i, sector in enumerate(SECTORS):
+#     sector_stocks = [ind for ind,s in enumerate(config.SECTORS) if s == sector]
+#     cc_returns.iloc[:, sector_stocks].plot(ax=axes[i], sharex=True, grid=True,
+#         title=sector)
+# plt.tight_layout()
 
 #Diagnostic plots
 #cc_returns.hist(bins = 10)
 
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
+app.config.suppress_callback_exceptions = True
 app.layout = webapp.layout
 
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
+    if pathname.lower() == '/':
+        return webapp.home
     if pathname.lower() == '/descriptiveanalysis':
         return webapp.descriptive_analysis
     elif pathname.lower() == '/predictiveanalysis':
@@ -78,6 +80,19 @@ def display_page(pathname):
         return webapp.portfolio_management
     else:
         return webapp.redirect
+
+#home
+@app.callback(Output('home-graph', 'figure'), 
+              [Input('home-dropdown', 'value')])
+def update_graph(selected_dropdown_values):
+    if selected_dropdown_values != []:
+        plot = px.line(stocks_monthly[selected_dropdown_values],
+            title='Raw data: Adjusted close')
+    else: plot = px.line(stocks_monthly, title='Raw data: Adjusted close')
+    return plot
+
+#descriptive_analysis
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
