@@ -97,7 +97,7 @@ def update_summary_graph(selected_dropdown_values):
               Input('returns-groupbysector', 'value'),
               Input('returns-sector-dropdown', 'value')
               ])
-def update_descriptive_graph(radio, groupby ,sector):
+def update_returns_graph(radio, groupby ,sector):
     if groupby == ['True'] and sector!=None:
         plot_stocks = [s['ticker']for s in config.STOCKS if s['sector']==sector]
     else:
@@ -115,6 +115,18 @@ def show_dropdown(groupby):
         return 'w3-show'
     else:
         return 'w3-hide'
+
+@app.callback(Output('hist-graph', 'figure'), 
+              [Input('hist-stock-dropdown', 'value'),
+              Input('hist-bins-slider', 'value')
+              ])
+def update_hist_graph(stock, bins):
+    if stock == None:
+        plot = px.histogram(x=[0], y=[0])
+    else:
+        plot = px.histogram(cc_returns[stock], nbins=bins,
+            title=stock+' cc returns diagnostic',)
+    return plot    
 
 if __name__ == '__main__':
     app.run_server(debug=True)

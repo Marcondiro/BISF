@@ -1,6 +1,5 @@
 import config
 
-from dash_core_components.Dropdown import Dropdown
 import dash_html_components as html
 import dash_core_components as dcc
 
@@ -29,7 +28,8 @@ layout = html.Div([
             ]
         ),
     html.Div(id='page-content',
-        className='w3-container'),
+        className='w3-container',
+        style={'margin-bottom': '50px'},),
     html.Footer(
         children=[
             html.Small('Stocks: ' + ' '.join([s['ticker'] for s in config.STOCKS])),
@@ -38,7 +38,7 @@ layout = html.Div([
         ],
         className='w3-container w3-blue-grey',
         style={'bottom': 0, 'position': 'fixed', 'width': '100%'}
-    )
+    ),
 ])
 
 home = html.Div([
@@ -54,10 +54,6 @@ descriptive_analysis = html.Div([
     html.H1(children='Descriptive Analysis'),
     html.Div(
         children=[
-            html.Div(
-                dcc.Graph(id='returns-graph'),
-                className='w3-container w3-cell',
-            ),
             html.Div([
                 html.H3('Options'),
                 dcc.RadioItems(
@@ -86,11 +82,42 @@ descriptive_analysis = html.Div([
                 ),
                 ],
                 className='w3-light-grey w3-container w3-cell w3-card',
-                )
+                ),
+            html.Div(
+                dcc.Graph(id='returns-graph'),
+                className='w3-container w3-cell',
+                ),
             ],
         className='w3-container w3-cell-row',
     ),
-    #TODO scegliere il diagnostic plot?
+    html.Br(),
+    html.Div(
+        children=[
+            html.Div([
+                html.H3('Options'),
+                dcc.Dropdown(
+                    id='hist-stock-dropdown',
+                    options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS]
+                ),
+                html.Br(),
+                dcc.Slider(
+                    id='hist-bins-slider',
+                    marks={i: str(i) for i in [4,22,40]},
+                    min=4,
+                    max=40,
+                    value=10,
+                )
+                ],
+                className='w3-light-grey w3-container w3-cell w3-card',
+                style={'min-width': '300px'}
+                ),
+            html.Div(
+                dcc.Graph(id='hist-graph'),
+                className='w3-container w3-cell',
+                ),
+            ],
+        className='w3-container w3-cell-row',
+    ),
 ])
 
 predictive_analysis = html.Div([

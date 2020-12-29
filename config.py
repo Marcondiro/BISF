@@ -1,6 +1,6 @@
 START = '2018-10-01'
 END = '2020-10-01'
-
+#TODO: color
 STOCKS = [
     {
         'ticker': 'TSM',
