@@ -23,8 +23,8 @@ STOCKS = [
         'sector': 'Aviation'
     },
     {
-        'ticker': 'BNTX',
-        'label': 'BioNTech',
+        'ticker': 'PFE',
+        'label': 'Pfizer',
         'sector': 'Pharma'
     },
     {

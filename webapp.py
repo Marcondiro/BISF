@@ -55,7 +55,7 @@ descriptive_analysis = html.Div([
     html.Div(
         children=[
             html.Div([
-                html.H3('Options'),
+                html.H3('Settings'),
                 dcc.RadioItems(
                     id='returns-radio',
                     options=[
@@ -94,22 +94,22 @@ descriptive_analysis = html.Div([
     html.Div(
         children=[
             html.Div([
-                html.H3('Options'),
+                html.H3('Settings'),
                 dcc.Dropdown(
                     id='hist-stock-dropdown',
                     options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS]
                 ),
-                html.Br(),
+                html.H5('Bins'),
                 dcc.Slider(
                     id='hist-bins-slider',
-                    marks={i: str(i) for i in [4,22,40]},
-                    min=4,
-                    max=40,
+                    marks={i: str(i) for i in [5,10,15,20,25]},
+                    min=5,
+                    max=25,
                     value=10,
                 )
                 ],
                 className='w3-light-grey w3-container w3-cell w3-card',
-                style={'min-width': '300px'}
+                style={'min-width': '250px'}
                 ),
             html.Div(
                 dcc.Graph(id='hist-graph'),
