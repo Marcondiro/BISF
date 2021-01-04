@@ -1,2 +1,3 @@
 .vscode/*
 stocks_cache/*
+__pycache__
