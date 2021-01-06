@@ -17,6 +17,8 @@ import plotly.figure_factory as ff
 import dash
 from dash.dependencies import Input, Output
 
+color_map = {s['ticker']: s['color'] for s in config.STOCKS}
+
 def getStocks(STOCKS, START, END):
     #Carico i dati relativi alle azioni.
     #Se presenti in cache evito di scaricarli.
@@ -44,15 +46,15 @@ stocks = getStocks([s['ticker'] for s in config.STOCKS], config.START, config.EN
 stocks_monthly = stocks.groupby(pd.Grouper(freq='M')).mean()
 
 #Adj close
-stocks_monthly.plot(grid=True, title='Raw data: Adjusted close')
+#stocks_monthly.plot(grid=True, title='Raw data: Adjusted close')
 
 #Returns
 simple_returns = stocks_monthly - stocks_monthly.shift(1)
 simple_returns = simple_returns.dropna()
-simple_returns.plot(grid=True, title='Simple returns')
+#simple_returns.plot(grid=True, title='Simple returns')
 cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
 cc_returns = cc_returns.dropna()
-cc_returns.plot(grid=True, title='CC returns')
+#cc_returns.plot(grid=True, title='CC returns')
 
 #returns grouped by sector
 # SECTORS = set(s['sector'] for s in config.STOCKS)
@@ -88,12 +90,12 @@ def display_page(pathname):
 @app.callback(Output('home-graph', 'figure'), 
               [Input('home-dropdown', 'value')])
 def update_summary_graph(selected_dropdown_values):
-    if selected_dropdown_values != []:
-        plot = px.line(stocks_monthly[selected_dropdown_values])
-    else: plot = px.line(stocks_monthly)
+    if selected_dropdown_values == []:
+        return {}
+    plot = px.line(stocks_monthly[selected_dropdown_values], color_discrete_map=color_map)
     plot.update_layout(
         title='Raw data: Adjusted close',
-        yaxis_title=None
+        yaxis_title=None,
     )
     return plot
 
@@ -108,10 +110,9 @@ def update_returns_graph(radio, groupby ,sector):
         plot_stocks = [s['ticker']for s in config.STOCKS if s['sector']==sector]
     else:
         plot_stocks = stocks.columns
-    if radio == 'simple':
-        plot = px.line(simple_returns[plot_stocks], title='Simple returns')
-    else:
-        plot = px.line(cc_returns[plot_stocks], title='Continuos compounded returns')
+    if radio == 'simple': title = 'Simple returns'
+    else: title='Continuos compounded returns'
+    plot = px.line(cc_returns[plot_stocks], title=title, color_discrete_map=color_map)
     return plot
 
 @app.callback(Output('returns-sector-dropdown', 'className'), 
@@ -125,10 +126,9 @@ def show_dropdown(groupby):
               [Input('hist-stock-dropdown', 'value'),
               Input('hist-bins-slider', 'value')])
 def update_hist_graph(stock, bins):
-    if stock == None:
-        return {}
-    plot = px.histogram(cc_returns[stock], nbins=bins,
-        title=stock+' cc returns distribution')
+    if stock == None: return {}
+    plot = px.histogram(cc_returns[stock], nbins=bins, title=stock+' cc returns distribution',
+        color_discrete_map=color_map)
     plot.update(layout_showlegend=False)
     return plot
 
@@ -136,9 +136,9 @@ def update_hist_graph(stock, bins):
               [Input('hist-stock-dropdown', 'value'),
               Input('hist-bins-slider', 'value')])
 def update_density_graph(stock, bins):
-    if stock == None:
-        return {}
-    plot = ff.create_distplot([cc_returns[stock]], [stock], show_hist=False, show_rug=False)
+    if stock == None: return {}
+    plot = ff.create_distplot([cc_returns[stock]], [stock], show_hist=False, show_rug=False,
+        colors=[color_map[stock]])
     plot.update(layout_showlegend=False)
     return plot
 
