@@ -13,6 +13,7 @@ import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
 import plotly.express as px
+import plotly.figure_factory as ff
 import dash
 from dash.dependencies import Input, Output
 
@@ -47,8 +48,10 @@ stocks_monthly.plot(grid=True, title='Raw data: Adjusted close')
 
 #Returns
 simple_returns = stocks_monthly - stocks_monthly.shift(1)
+simple_returns = simple_returns.dropna()
 simple_returns.plot(grid=True, title='Simple returns')
 cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
+cc_returns = cc_returns.dropna()
 cc_returns.plot(grid=True, title='CC returns')
 
 #returns grouped by sector
@@ -86,9 +89,12 @@ def display_page(pathname):
               [Input('home-dropdown', 'value')])
 def update_summary_graph(selected_dropdown_values):
     if selected_dropdown_values != []:
-        plot = px.line(stocks_monthly[selected_dropdown_values],
-            title='Raw data: Adjusted close')
-    else: plot = px.line(stocks_monthly, title='Raw data: Adjusted close')
+        plot = px.line(stocks_monthly[selected_dropdown_values])
+    else: plot = px.line(stocks_monthly)
+    plot.update_layout(
+        title='Raw data: Adjusted close',
+        yaxis_title=None
+    )
     return plot
 
 #descriptive_analysis
@@ -113,20 +119,28 @@ def update_returns_graph(radio, groupby ,sector):
 def show_dropdown(groupby):
     if groupby == ['True']:
         return 'w3-show'
-    else:
-        return 'w3-hide'
+    return 'w3-hide'
 
 @app.callback(Output('hist-graph', 'figure'), 
               [Input('hist-stock-dropdown', 'value'),
-              Input('hist-bins-slider', 'value')
-              ])
+              Input('hist-bins-slider', 'value')])
 def update_hist_graph(stock, bins):
     if stock == None:
-        plot = px.histogram(x=[0], y=[0])
-    else:
-        plot = px.histogram(cc_returns[stock], nbins=bins,
-            title=stock+' cc returns diagnostic',)
-    return plot    
+        return {}
+    plot = px.histogram(cc_returns[stock], nbins=bins,
+        title=stock+' cc returns distribution')
+    plot.update(layout_showlegend=False)
+    return plot
+
+@app.callback(Output('density-graph', 'figure'), 
+              [Input('hist-stock-dropdown', 'value'),
+              Input('hist-bins-slider', 'value')])
+def update_density_graph(stock, bins):
+    if stock == None:
+        return {}
+    plot = ff.create_distplot([cc_returns[stock]], [stock], show_hist=False, show_rug=False)
+    plot.update(layout_showlegend=False)
+    return plot
 
 if __name__ == '__main__':
     app.run_server(debug=True)

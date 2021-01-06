@@ -29,7 +29,7 @@ layout = html.Div([
         ),
     html.Div(id='page-content',
         className='w3-container',
-        style={'margin-bottom': '50px'},),
+        style={'marginBottom': '50px'},),
     html.Footer(
         children=[
             html.Small('Stocks: ' + ' '.join([s['ticker'] for s in config.STOCKS])),
@@ -42,12 +42,29 @@ layout = html.Div([
 ])
 
 home = html.Div([
-    html.H1(children='Summary'),
+    html.H1('Summary'),
     dcc.Dropdown(id='home-dropdown',
         options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
         value=[s['ticker'] for s in config.STOCKS],
         multi=True),
     dcc.Graph(id='home-graph'),
+    html.Div([
+        html.H2('Choosen stocks'),
+        html.Table(
+            [html.Tr([
+                html.Th('Ticker'),
+                html.Th('Name'),
+                html.Th('Industrial sector'),
+            ])] +
+            [html.Tr([
+                html.Td(s['ticker']),
+                html.Td(s['label']),
+                html.Td(s['sector']),
+            ])for s in config.STOCKS],
+            className='w3-table w3-bordered'
+        )],
+        className='w3-container'
+    )
 ])
 
 descriptive_analysis = html.Div([
@@ -85,38 +102,49 @@ descriptive_analysis = html.Div([
                 ),
             html.Div(
                 dcc.Graph(id='returns-graph'),
-                className='w3-container w3-cell',
+                className='w3-cell',
                 ),
             ],
-        className='w3-container w3-cell-row',
+        className='w3-cell-row',
+        style={'minWidth': '220px'},
     ),
     html.Br(),
-    html.Div(
-        children=[
-            html.Div([
-                html.H3('Settings'),
-                dcc.Dropdown(
-                    id='hist-stock-dropdown',
-                    options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS]
-                ),
-                html.H5('Bins'),
-                dcc.Slider(
-                    id='hist-bins-slider',
-                    marks={i: str(i) for i in [5,10,15,20,25]},
-                    min=5,
-                    max=25,
-                    value=10,
-                )
-                ],
-                className='w3-light-grey w3-container w3-cell w3-card',
-                style={'min-width': '250px'}
-                ),
+    html.H2('Diagnostic plots'),
+    html.Div([
+        html.Div([
+            html.H3('Settings'),
+            html.H5('Stock'),
+            dcc.Dropdown(
+                id='hist-stock-dropdown',
+                options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
+                value=config.STOCKS[1]['ticker']
+            ),
+            html.H5('Histogram bins'),
+            dcc.Slider(
+                id='hist-bins-slider',
+                marks={i: str(i) for i in [5,10,15]},
+                min=5,
+                max=15,
+                value=9,
+            )
+            ],
+            className='w3-light-grey w3-container w3-cell w3-card',
+            style={'minWidth': '220px'},
+            ),
+        html.Div([
             html.Div(
-                dcc.Graph(id='hist-graph'),
-                className='w3-container w3-cell',
+                [dcc.Graph(id='hist-graph')],
+                className='w3-col s12 m6 l6',
+            ),
+            html.Div(
+                [dcc.Graph(id='density-graph')],
+                className='w3-col s12 m6 l6',
                 ),
             ],
-        className='w3-container w3-cell-row',
+            className='w3-cell w3-row',
+            ),
+        ],
+        className='w3-cell-row',
     ),
 ])
 
@@ -126,6 +154,7 @@ predictive_analysis = html.Div([
 
 portfolio_management = html.Div([
     html.H2(children='portfolio_management')
+    #TODO Piechart per il risultato del markovitz
 ])
 
 redirect = dcc.Location(pathname='/DescriptiveAnalysis', id='_')
