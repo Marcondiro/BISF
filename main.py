@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-s
 #Config
-from logging import debug
 import config
 
 #Webapp
@@ -110,9 +109,13 @@ def update_returns_graph(radio, groupby ,sector):
         plot_stocks = [s['ticker']for s in config.STOCKS if s['sector']==sector]
     else:
         plot_stocks = stocks.columns
-    if radio == 'simple': title = 'Simple returns'
-    else: title='Continuos compounded returns'
-    plot = px.line(cc_returns[plot_stocks], title=title, color_discrete_map=color_map)
+    if radio == 'simple':
+        title = 'Simple returns'
+        df = simple_returns
+    else:
+        title='Continuos compounded returns'
+        df = cc_returns
+    plot = px.line(df[plot_stocks], title=title, color_discrete_map=color_map)
     return plot
 
 @app.callback(Output('returns-sector-dropdown', 'className'), 
@@ -123,7 +126,7 @@ def show_dropdown(groupby):
     return 'w3-hide'
 
 @app.callback(Output('hist-graph', 'figure'), 
-              [Input('hist-stock-dropdown', 'value'),
+              [Input('diagnostic-stock-dropdown', 'value'),
               Input('hist-bins-slider', 'value')])
 def update_hist_graph(stock, bins):
     if stock == None: return {}
@@ -133,13 +136,19 @@ def update_hist_graph(stock, bins):
     return plot
 
 @app.callback(Output('density-graph', 'figure'), 
-              [Input('hist-stock-dropdown', 'value'),
-              Input('hist-bins-slider', 'value')])
-def update_density_graph(stock, bins):
+              [Input('diagnostic-stock-dropdown', 'value')])
+def update_density_graph(stock):
     if stock == None: return {}
     plot = ff.create_distplot([cc_returns[stock]], [stock], show_hist=False, show_rug=False,
         colors=[color_map[stock]])
     plot.update(layout_showlegend=False)
+    return plot
+
+@app.callback(Output('boxplot-graph', 'figure'), 
+              [Input('diagnostic-stock-dropdown', 'value')])
+def update_boxplot_graph(stock):
+    if stock == None: return {}
+    plot = px.box(cc_returns[stock], color_discrete_map=color_map)
     return plot
 
 if __name__ == '__main__':

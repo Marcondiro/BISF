@@ -99,10 +99,11 @@ descriptive_analysis = html.Div([
                 ),
                 ],
                 className='w3-light-grey w3-container w3-cell w3-card',
+                style={'minWidth': '220px'},
                 ),
             html.Div(
-                dcc.Graph(id='returns-graph'),
-                className='w3-cell',
+                [dcc.Graph(id='returns-graph')],
+                className='w3-cell w3-container',
                 ),
             ],
         className='w3-cell-row',
@@ -115,7 +116,7 @@ descriptive_analysis = html.Div([
             html.H3('Settings'),
             html.H5('Stock'),
             dcc.Dropdown(
-                id='hist-stock-dropdown',
+                id='diagnostic-stock-dropdown',
                 options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
                 value=config.STOCKS[1]['ticker']
             ),
@@ -130,19 +131,35 @@ descriptive_analysis = html.Div([
             ],
             className='w3-light-grey w3-container w3-cell w3-card',
             style={'minWidth': '220px'},
-            ),
+        ),
         html.Div([
-            html.Div(
-                [dcc.Graph(id='hist-graph')],
-                className='w3-col s12 m6 l6',
-            ),
-            html.Div(
-                [dcc.Graph(id='density-graph')],
-                className='w3-col s12 m6 l6',
+            html.Div([
+                html.Div(
+                    [dcc.Graph(id='hist-graph')],
+                    className='w3-col s12 m6 l6',
                 ),
-            ],
-            className='w3-cell w3-row',
+                html.Div(
+                    [dcc.Graph(id='density-graph')],
+                    className='w3-col s12 m6 l6',
+                    ),
+                ],
+                className='w3-row',
             ),
+            html.Div([
+                html.Div(
+                    [dcc.Graph(id='boxplot-graph')],
+                    className='w3-col s12 m6 l6',
+                ),
+                html.Div(
+                    [dcc.Graph(id='qqplot-graph')],
+                    className='w3-col s12 m6 l6',
+                    ),
+                ],
+                className='w3-row',
+            ),
+            ],
+            className='w3-cell',
+        ),
         ],
         className='w3-cell-row',
     ),
