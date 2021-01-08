@@ -9,10 +9,11 @@ import webapp
 from pathlib import Path
 import numpy as np
 import pandas as pd
+from scipy import stats
 import pandas_datareader.data as web
-import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.figure_factory as ff
+import plotly.graph_objects as go
 import dash
 from dash.dependencies import Input, Output
 
@@ -145,11 +146,30 @@ def update_density_graph(stock):
     return plot
 
 @app.callback(Output('boxplot-graph', 'figure'), 
-              [Input('diagnostic-stock-dropdown', 'value')])
-def update_boxplot_graph(stock):
+              [Input('diagnostic-stock-dropdown', 'value'),
+              Input('boxplot-showall', 'value'),])
+def update_boxplot_graph(stock, show_all):
     if stock == None: return {}
-    plot = px.box(cc_returns[stock], color_discrete_map=color_map)
+    if show_all == ['True']: df = cc_returns
+    else: df = cc_returns[[stock]]
+    df = df.melt(var_name='stock')
+    plot = px.box(df, y='value', x='stock', color='stock', color_discrete_map=color_map)
+    return plot
+
+@app.callback(Output('qqplot-graph', 'figure'), 
+              [Input('diagnostic-stock-dropdown', 'value')])
+def update_qqplot_graph(stock):
+    if stock == None: return {}
+    qq = stats.probplot(cc_returns[stock])
+    plot = px.scatter(x=qq[0][0], y=qq[0][1], color_discrete_sequence=[color_map[stock]])
+    x = np.array([qq[0][0][0], qq[0][0][-1]])
+    plot.add_scatter(
+        x=x,
+        y=qq[1][1]+qq[1][0]*x,
+        mode="lines",
+        showlegend=False
+    )
     return plot
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=config.DEBUG)

@@ -38,3 +38,5 @@ STOCKS = [
         'color': 'DarkRed',
     }
 ]
+
+DEBUG = True #TODO turn off debug

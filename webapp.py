@@ -127,7 +127,14 @@ descriptive_analysis = html.Div([
                 min=5,
                 max=15,
                 value=9,
-            )
+            ),
+            html.H5('Boxplot'),
+            dcc.Checklist(
+                id='boxplot-showall',
+                options=[{'label': ' Show all stocks', 'value': 'True'},],
+                value=[],
+                inputClassName='w3-check',
+            ),
             ],
             className='w3-light-grey w3-container w3-cell w3-card',
             style={'minWidth': '220px'},
