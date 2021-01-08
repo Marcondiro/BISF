@@ -155,5 +155,20 @@ def update_qqplot_graph(stock):
     )
     return plot
 
+@app.callback(Output('descriptive_statistics_table', 'children'),
+              [Input('url', 'pathname')])
+def update_descriptive_statistics_table(pathname):
+    if pathname.lower() != '/descriptiveanalysis': return None
+    df = pd.DataFrame(data ={
+        'stock': [s['ticker'] for s in config.STOCKS],
+        'mean': cc_returns.mean(axis=0).round(4),
+        'variance': cc_returns.var(axis=0).round(4),
+        'standard_deviation': cc_returns.std(axis=0).round(4),
+        'skewness': cc_returns.skew(axis=0).round(4),
+        'kurtosis': cc_returns.kurtosis(axis=0).round(4),
+    })
+    table = webapp.generate_descriptive_statistics_table(df)
+    return table
+
 if __name__ == '__main__':
     app.run_server(debug=config.DEBUG)

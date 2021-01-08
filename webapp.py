@@ -170,7 +170,36 @@ descriptive_analysis = html.Div([
         ],
         className='w3-cell-row',
     ),
+    html.Br(),
+    html.H2('Descriptive statistics'),
+    html.Div(
+        id='descriptive_statistics_table',
+        className='w3-container',
+    ),
 ])
+
+def generate_descriptive_statistics_table(data):
+    table_children = [
+        html.Tr([
+            html.Th('Stock'),
+            html.Th('Mean'),
+            html.Th('Variance'),
+            html.Th('Standard deviation'),
+            html.Th('Skewness'),
+            html.Th('Kurtosis'),
+        ])]
+    for index, d in data.iterrows():
+        table_children = table_children + [
+            html.Tr([
+                html.Td(d['stock']),
+                html.Td(d['mean']),
+                html.Td(d['variance']),
+                html.Td(d['standard_deviation']),
+                html.Td(d['skewness']),
+                html.Td(d['kurtosis']),
+            ])]
+    table = html.Table(table_children, className='w3-table w3-bordered')
+    return table
 
 predictive_analysis = html.Div([
     html.H2(children='predictive_analysis')
