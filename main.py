@@ -13,7 +13,6 @@ from scipy import stats
 import pandas_datareader.data as web
 import plotly.express as px
 import plotly.figure_factory as ff
-import plotly.graph_objects as go
 import dash
 from dash.dependencies import Input, Output
 
@@ -42,32 +41,17 @@ def getStocks(STOCKS, START, END):
             dataFrame = dataFrame.join(s)
     return dataFrame
 
+#Stocks
 stocks = getStocks([s['ticker'] for s in config.STOCKS], config.START, config.END)
 stocks_monthly = stocks.groupby(pd.Grouper(freq='M')).mean()
-
-#Adj close
-#stocks_monthly.plot(grid=True, title='Raw data: Adjusted close')
 
 #Returns
 simple_returns = stocks_monthly - stocks_monthly.shift(1)
 simple_returns = simple_returns.dropna()
-#simple_returns.plot(grid=True, title='Simple returns')
 cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
 cc_returns = cc_returns.dropna()
-#cc_returns.plot(grid=True, title='CC returns')
 
-#returns grouped by sector
-# SECTORS = set(s['sector'] for s in config.STOCKS)
-# fig, axes = plt.subplots(len(SECTORS), 1)
-# for i, sector in enumerate(SECTORS):
-#     sector_stocks = [ind for ind,s in enumerate(config.SECTORS) if s == sector]
-#     cc_returns.iloc[:, sector_stocks].plot(ax=axes[i], sharex=True, grid=True,
-#         title=sector)
-# plt.tight_layout()
-
-#Diagnostic plots
-#cc_returns.hist(bins = 10)
-
+#Webapp
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
 app.config.suppress_callback_exceptions = True
 app.layout = webapp.layout
