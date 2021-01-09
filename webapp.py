@@ -1,3 +1,4 @@
+from dash_html_components.Thead import Thead
 import config
 
 import dash_html_components as html
@@ -182,39 +183,57 @@ descriptive_analysis = html.Div([
         id='correlation-matrix-table',
         className='w3-container',
     ),
+    html.Br(),
+    html.H2('Scatterplot matrix'),
+    html.Div(
+        html.Div(
+            [dcc.Graph(id='scatterplot-graph')],
+            className='w3-container',
+        ),
+    )
 ])
 
 def generate_descriptive_statistics_table(data):
-    table_children = [
-        html.Tr([
+    table_head = [
+        html.Thead(html.Tr([
             html.Th('Stock'),
             html.Th('Mean'),
             html.Th('Variance'),
             html.Th('Standard deviation'),
             html.Th('Skewness'),
             html.Th('Kurtosis'),
-        ])]
-    for index, d in data.iterrows():
-        table_children = table_children + [
-            html.Tr([
+        ]))]
+    table_body = [
+        html.Tr([
                 html.Td(d['stock']),
                 html.Td(d['mean']),
                 html.Td(d['variance']),
                 html.Td(d['standard_deviation']),
                 html.Td(d['skewness']),
                 html.Td(d['kurtosis']),
-            ])]
-    table = html.Table(table_children, className='w3-table w3-bordered')
+            ],
+            className='w3-hover-gray')
+        for index, d in data.iterrows()
+    ]
+    table_body = [html.Tbody(table_body)]
+    table = html.Table(table_head+table_body, className='w3-table w3-bordered')
     return table
 
 def generate_correlation_matrix_table(data):
-    table_children = [html.Tr([html.Th('')]+[html.Th(c) for c in data.columns])]
-    for index, row in data.iterrows():
-        table_children = table_children + [
-            html.Tr(
-                [html.Th(index)] +
-                [html.Td(cell) for cell in row])]
-    table = html.Table(table_children, className='w3-table w3-bordered')
+    table_head = [
+        html.Thead(
+            html.Tr([html.Th('')]+
+                [html.Th(c) for c in data.columns]))]
+    table_body = [
+        html.Tr(
+            [html.Th(index)] +
+            [html.Td(
+                cell,
+                className='w3-pale-green'if cell>0.5 else '')
+            for cell in row])
+        for index, row in data.iterrows()]
+    table_body = [html.Tbody(table_body)]
+    table = html.Table(table_head+table_body, className='w3-table w3-bordered')
     return table
 
 predictive_analysis = html.Div([

@@ -173,10 +173,18 @@ def update_descriptive_statistics_table(pathname):
 
 @app.callback(Output('correlation-matrix-table', 'children'),
               [Input('url', 'pathname')])
-def update_descriptive_statistics_table(pathname):
+def update_correlation_matrix_table(pathname):
     if pathname.lower() != '/descriptiveanalysis': return None
     table = webapp.generate_correlation_matrix_table(cc_returns.corr().round(4))
     return table
+
+@app.callback(Output('scatterplot-graph', 'figure'),
+              [Input('url', 'pathname')])
+def update_density_graph(pathname):
+    if pathname.lower() != '/descriptiveanalysis': return None
+    plot = px.scatter_matrix(cc_returns, title='', height=1000)
+    plot.update_traces(diagonal_visible=False)
+    return plot
 
 if __name__ == '__main__':
     app.run_server(debug=config.DEBUG)
