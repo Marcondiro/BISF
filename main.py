@@ -138,6 +138,7 @@ def update_boxplot_graph(stock, show_all):
     else: df = cc_returns[[stock]]
     df = df.melt(var_name='stock')
     plot = px.box(df, y='value', x='stock', color='stock', color_discrete_map=color_map)
+    plot.update(layout_showlegend=False)
     return plot
 
 @app.callback(Output('qqplot-graph', 'figure'), 
@@ -155,7 +156,7 @@ def update_qqplot_graph(stock):
     )
     return plot
 
-@app.callback(Output('descriptive_statistics_table', 'children'),
+@app.callback(Output('descriptive-statistics-table', 'children'),
               [Input('url', 'pathname')])
 def update_descriptive_statistics_table(pathname):
     if pathname.lower() != '/descriptiveanalysis': return None
@@ -168,6 +169,13 @@ def update_descriptive_statistics_table(pathname):
         'kurtosis': cc_returns.kurtosis(axis=0).round(4),
     })
     table = webapp.generate_descriptive_statistics_table(df)
+    return table
+
+@app.callback(Output('correlation-matrix-table', 'children'),
+              [Input('url', 'pathname')])
+def update_descriptive_statistics_table(pathname):
+    if pathname.lower() != '/descriptiveanalysis': return None
+    table = webapp.generate_correlation_matrix_table(cc_returns.corr().round(4))
     return table
 
 if __name__ == '__main__':

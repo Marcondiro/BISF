@@ -173,7 +173,13 @@ descriptive_analysis = html.Div([
     html.Br(),
     html.H2('Descriptive statistics'),
     html.Div(
-        id='descriptive_statistics_table',
+        id='descriptive-statistics-table',
+        className='w3-container',
+    ),
+    html.Br(),
+    html.H4('Correlation matrix'),
+    html.Div(
+        id='correlation-matrix-table',
         className='w3-container',
     ),
 ])
@@ -198,6 +204,16 @@ def generate_descriptive_statistics_table(data):
                 html.Td(d['skewness']),
                 html.Td(d['kurtosis']),
             ])]
+    table = html.Table(table_children, className='w3-table w3-bordered')
+    return table
+
+def generate_correlation_matrix_table(data):
+    table_children = [html.Tr([html.Th('')]+[html.Th(c) for c in data.columns])]
+    for index, row in data.iterrows():
+        table_children = table_children + [
+            html.Tr(
+                [html.Th(index)] +
+                [html.Td(cell) for cell in row])]
     table = html.Table(table_children, className='w3-table w3-bordered')
     return table
 

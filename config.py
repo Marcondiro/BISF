@@ -32,10 +32,10 @@ STOCKS = [
         'color': 'DodgerBlue',
     },
     {
-        'ticker': 'MRNA',
-        'label': 'Moderna',
+        'ticker': 'BMY',
+        'label': 'Bristol-Myers Squibb',
         'sector': 'Pharma',
-        'color': 'DarkRed',
+        'color': 'DeepPink',
     }
 ]
 
