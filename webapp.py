@@ -69,46 +69,44 @@ home = html.Div([
 ])
 
 descriptive_analysis = html.Div([
-    html.H1(children='Descriptive Analysis'),
-    html.Div(
-        children=[
-            html.Div([
-                html.H3('Settings'),
-                dcc.RadioItems(
-                    id='returns-radio',
-                    options=[
-                        {'label': ' Simple', 'value': 'simple'},
-                        {'label': ' Compounded', 'value': 'compounded'},
-                    ],
-                    value='compounded',
-                    className='w3-container',
-                    inputClassName='w3-radio',
-                    labelStyle={'display': 'block'},
-                ),
-                html.Br(),
-                dcc.Checklist(
-                    id='returns-groupbysector',
-                    options=[{'label': ' Group by sector', 'value': 'True'},],
-                    value=[],
-                    className='w3-container',
-                    inputClassName='w3-check',
-                ),
-                html.Br(),
-                dcc.Dropdown(
-                    id='returns-sector-dropdown',
-                    options=[{'label': s, 'value': s} for s in SECTORS]
-                ),
+    html.H1('Descriptive Analysis'),
+    html.Div([
+        html.Div([
+            html.H3('Settings'),
+            dcc.RadioItems(
+                id='returns-radio',
+                options=[
+                    {'label': ' Simple', 'value': 'simple'},
+                    {'label': ' Compounded', 'value': 'compounded'},
                 ],
-                className='w3-light-grey w3-container w3-cell w3-card',
-                style={'minWidth': '220px'},
-                ),
-            html.Div(
-                [dcc.Graph(id='returns-graph')],
-                className='w3-cell w3-container',
-                ),
+                value='compounded',
+                className='w3-container',
+                inputClassName='w3-radio',
+                labelStyle={'display': 'block'},
+            ),
+            html.Br(),
+            dcc.Checklist(
+                id='returns-groupbysector',
+                options=[{'label': ' Group by sector', 'value': 'True'},],
+                value=[],
+                className='w3-container',
+                inputClassName='w3-check',
+            ),
+            html.Br(),
+            dcc.Dropdown(
+                id='returns-sector-dropdown',
+                options=[{'label': s, 'value': s} for s in SECTORS]
+            ),
             ],
+            className='w3-light-grey w3-container w3-cell w3-card',
+            style={'minWidth': '220px'},
+            ),
+        html.Div(
+            [dcc.Graph(id='returns-graph')],
+            className='w3-cell w3-container',
+            ),
+        ],
         className='w3-cell-row',
-        style={'minWidth': '220px'},
     ),
     html.Br(),
     html.H2('Diagnostic plots'),
@@ -185,11 +183,25 @@ descriptive_analysis = html.Div([
     ),
     html.Br(),
     html.H2('Scatterplot matrix'),
-    html.Div(
+    html.Div([
+        html.Div([
+            html.H3('Settings'),
+            dcc.Checklist(
+                id='scatterplot-stocks-checklist',
+                options=[{'label': ' '+s['label'], 'value': s['ticker']} for s in config.STOCKS],
+                value=[s['ticker'] for s in config.STOCKS][0:2],
+                inputClassName='w3-check',
+                labelStyle={'display': 'block'},
+                className='w3-container',
+            )],
+            className='w3-light-grey w3-container w3-cell w3-card',
+            style={'minWidth': '220px'},
+        ),
         html.Div(
             [dcc.Graph(id='scatterplot-graph')],
-            className='w3-container',
-        ),
+            className='w3-container w3-cell',
+        ),],
+        className='w3-cell-row',
     )
 ])
 
@@ -212,7 +224,7 @@ def generate_descriptive_statistics_table(data):
                 html.Td(d['skewness']),
                 html.Td(d['kurtosis']),
             ],
-            className='w3-hover-gray')
+            className='w3-hover-light-gray')
         for index, d in data.iterrows()
     ]
     table_body = [html.Tbody(table_body)]
@@ -237,7 +249,45 @@ def generate_correlation_matrix_table(data):
     return table
 
 predictive_analysis = html.Div([
-    html.H2(children='predictive_analysis')
+    html.H1('Predictive Analysis'),
+    html.Div([
+        html.Div([
+            html.H3('Settings'),
+            dcc.Dropdown(
+                id='forecast-stock-dropdown',
+                options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
+                value=config.STOCKS[0]['ticker'],
+            ),
+            html.Br(),
+            dcc.Checklist(
+                id='forecast-checklist',
+                options=[{'label': ' Forecast', 'value': 'forecast'},
+                        {'label': ' Observed', 'value': 'observed'},],
+                value=['forecast'],
+                inputClassName='w3-check',
+                labelStyle={'display': 'block'},
+                className='w3-container',
+            ),
+            html.Br(),
+            html.H5('Forecast confidence %'),
+            dcc.Slider(
+                id='forecast-confidence-slider',
+                marks={i: str(i) for i in [80,90,95,99]},
+                min=80,
+                max=99,
+                value=95,
+            ),
+            ],
+            className='w3-light-grey w3-container w3-cell w3-card',
+            style={'minWidth': '220px'},
+            ),
+        html.Div(
+            [dcc.Graph(id='forecast-graph')],
+            className='w3-cell w3-container',
+            ),
+        ],
+        className='w3-cell-row',
+    ),
 ])
 
 portfolio_management = html.Div([

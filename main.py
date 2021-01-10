@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-s
+#%%
 #Config
+from datetime import datetime
 import config
-
 #Webapp
 import webapp
-
 #Packages
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import stats
+import statsmodels.api as sm
 import pandas_datareader.data as web
 import plotly.express as px
+import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import dash
 from dash.dependencies import Input, Output
@@ -19,8 +21,7 @@ from dash.dependencies import Input, Output
 color_map = {s['ticker']: s['color'] for s in config.STOCKS}
 
 def getStocks(STOCKS, START, END):
-    #Carico i dati relativi alle azioni.
-    #Se presenti in cache evito di scaricarli.
+    #Carico i dati relativi alle azioni. Se presenti in cache evito di scaricarli.
     CACHE_DIR = './stocks_cache/'
     Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
     dataFrame = None
@@ -50,6 +51,52 @@ simple_returns = stocks_monthly - stocks_monthly.shift(1)
 simple_returns = simple_returns.dropna()
 cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
 cc_returns = cc_returns.dropna()
+
+#Predictive analysis
+#Scarico i dati per i periodi n (training) e m (test)
+pred_raw_data = getStocks([s['ticker'] for s in config.STOCKS],
+                          config.PREDICTION_PERIODS['N'],
+                          config.PREDICTION_PERIODS['L'])
+#Calcolo cc returns
+pred_raw_data = pred_raw_data.groupby(pd.Grouper(freq='M')).mean()
+pred_raw_data = np.log(pred_raw_data / pred_raw_data.shift(1))
+pred_raw_data = pred_raw_data.dropna()
+
+training_set = pred_raw_data[config.PREDICTION_PERIODS['N']:config.PREDICTION_PERIODS['M']]
+test_set = pred_raw_data[config.PREDICTION_PERIODS['M']:config.PREDICTION_PERIODS['L']]
+
+expire_time = pd.to_datetime("now") + pd.DateOffset(seconds=config.PREDICTION_LIMIT_SECONDS)
+best_mse = pd.Series({s: np.inf for s in training_set.columns})
+best_results = pd.Series({s: None for s in training_set.columns})
+for arima_p in range(1, 10):
+    for arima_q in range(0, 10):
+        models = pd.Series({s: sm.tsa.statespace.SARIMAX(pred_raw_data[s],
+                                        order=(arima_p, 0, arima_q),
+                                        enforce_stationarity=False,
+                                        enforce_invertibility=False)
+                for s in training_set.columns})
+        results = pd.Series({s: models[s].fit() for s in training_set.columns})
+        pred = [r.get_prediction(start=test_set.index[0], dynamic= False).predicted_mean
+                for r in results]
+        pred = pd.concat(pred, axis=1)
+        pred.columns = training_set.columns
+        mse = pd.Series(((test_set - pred) ** 2).mean())
+        #Salvo il modello corrente se è il migliore (mse minimo)
+        best_mse = pd.concat([best_mse, mse], axis=1).min(axis=1)
+        for s in training_set.columns:
+            if mse[s] == best_mse[s]:
+                best_results[s] = results[s]
+        #Se supero il tempo limite interrompo la grid search
+        if pd.to_datetime("now") > expire_time :
+            print('Prediction time slice ended at p=', arima_p, 'q=', arima_q)
+            break
+    if pd.to_datetime("now") > expire_time:
+        break
+
+forecast = pd.Series({s: best_results[s].get_forecast(steps=config.END) for s in best_results.index})
+cc_returns_forecast = [s.predicted_mean for s in forecast]
+cc_returns_forecast = pd.concat(cc_returns_forecast, axis=1)
+cc_returns_forecast.columns = cc_returns.columns
 
 #Webapp
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
@@ -179,11 +226,39 @@ def update_correlation_matrix_table(pathname):
     return table
 
 @app.callback(Output('scatterplot-graph', 'figure'),
-              [Input('url', 'pathname')])
-def update_density_graph(pathname):
-    if pathname.lower() != '/descriptiveanalysis': return None
-    plot = px.scatter_matrix(cc_returns, title='', height=1000)
-    plot.update_traces(diagonal_visible=False)
+              [Input('scatterplot-stocks-checklist', 'value')])
+def update_density_graph(stocks):
+    if len(stocks) < 2: return {}
+    plot = px.scatter_matrix(cc_returns[stocks], title='')
+    return plot
+
+#predictive_analysis
+@app.callback(Output('forecast-graph', 'figure'),
+              [Input('forecast-stock-dropdown', 'value'),
+              Input('forecast-checklist', 'value'),
+              Input('forecast-confidence-slider', 'value')])
+def update_forecast_graph(stock, values, confidence):
+    if stock == None: return {}
+    df = cc_returns[[stock]].loc[:cc_returns_forecast.index[0],:]
+    if 'observed' in values:
+        df = cc_returns[[stock]]
+    df.columns = ['Observed']
+    plot = px.line(df, title='', color_discrete_sequence=[color_map[stock], 'Red'])
+    if 'forecast' in values:
+        df = df.join(cc_returns_forecast[[stock]], how='outer')
+        df.columns = ['Observed', 'Forecast']
+        plot = px.line(df, title='', color_discrete_sequence=[color_map[stock], 'Red'])
+        confidece_interval = forecast[stock].conf_int(alpha=(1.0-confidence/100.0))
+        upper = confidece_interval.iloc[:,1]
+        lower = confidece_interval.iloc[:,0][::-1]
+        plot.add_trace(go.Scatter(
+            x=list(cc_returns_forecast.index)+list(cc_returns_forecast.index[::-1]),
+            y=list(upper)+list(lower),
+            fill='toself',
+            fillcolor='rgba(255,0,0,0.2)',
+            line_color='rgba(255,255,255,0)',
+            showlegend=False,
+        ))
     return plot
 
 if __name__ == '__main__':
