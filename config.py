@@ -4,37 +4,37 @@ STOCKS = [
     {
         'ticker': 'TSM',
         'label': 'Taiwan Semiconductor',
-        'sector': 'Tech',
+        'sector': 'Technology',
         'color': 'DarkSlateGray',
     },
     {
         'ticker': 'NVDA',
         'label': 'Nvidia',
-        'sector': 'Tech',
+        'sector': 'Technology',
         'color': 'DarkGreen',
     },
     {
         'ticker': 'BA',
         'label': 'Boeing',
-        'sector': 'Aviation',
+        'sector': 'Industrials',
         'color': 'DarkBlue',
     },
     {
         'ticker': 'LUV',
         'label': 'Southwest Airlines',
-        'sector': 'Aviation',
+        'sector': 'Industrials',
         'color': 'DarkOrange',
     },
     {
         'ticker': 'PFE',
         'label': 'Pfizer',
-        'sector': 'Pharma',
+        'sector': 'Healthcare',
         'color': 'DodgerBlue',
     },
     {
         'ticker': 'BMY',
         'label': 'Bristol-Myers Squibb',
-        'sector': 'Pharma',
+        'sector': 'Healthcare',
         'color': 'DeepPink',
     }
 ]
