@@ -25,7 +25,10 @@ layout = html.Div([
                 className='w3-bar-item w3-button'),
             html.A(children='Portfolio Management',
                 href='/PortfolioManagement',
-                className='w3-bar-item w3-button')
+                className='w3-bar-item w3-button'),
+            html.A(children='Beta',
+                href='/beta',
+                className='w3-bar-item w3-button'),
             ]
         ),
     html.Div(id='page-content',
@@ -117,7 +120,7 @@ descriptive_analysis = html.Div([
             dcc.Dropdown(
                 id='diagnostic-stock-dropdown',
                 options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
-                value=config.STOCKS[1]['ticker']
+                value=config.STOCKS[0]['ticker']
             ),
             html.H5('Histogram bins'),
             dcc.Slider(
@@ -393,8 +396,51 @@ predictive_analysis = html.Div([
 ])
 
 portfolio_management = html.Div([
-    html.H2(children='portfolio_management')
-    #TODO Piechart per il risultato del markovitz
+    html.H2('Portfolio management'),
+    html.H3('Mean-Variance model market portfolio. Expected returns based on forecasting.'),
+    html.Div([
+        html.Div([
+            html.H3('Settings'),
+            dcc.Checklist(
+                id='portfolio-realweights-checklist',
+                options=[{'label': ' Real weights', 'value': 'True'},],
+                value=[],
+                inputClassName='w3-check',
+                labelStyle={'display': 'block'},
+                className='w3-container',
+            ),
+            html.H3('Portfolio Details'),
+            html.Div(id='portfolio-details'),
+            ],
+            className='w3-light-grey w3-container w3-cell w3-card',
+            style={'minWidth': '220px'},
+            ),
+        html.Div(
+            [dcc.Graph(id='portfolio-weights-graph')],
+            className='w3-cell w3-container',
+            ),
+        ],
+        className='w3-cell-row',
+    ),
+])
+
+def generate_portfolio_details(budget, start, end, principal, ret, risk, sharpe):
+    return html.Div([
+        html.P('Budget: '+str(budget)),
+        html.P('Start: '+start),
+        html.P('End: '+end),
+        html.P('Principal: '+str(round(principal, 2))),
+        html.P('Expected return: '+str(round(ret, 2))+'%'),
+        html.P('Risk: '+str(round(risk, 2))),
+        html.P('Sharpe ratio: '+str(round(sharpe, 2))),
+    ])
+
+beta = html.Div([
+    html.H2('Beta 12-months based on '+config.MARKET_INDEX['label']),
+    html.Div(
+        [dcc.Graph(id='beta-graph')],
+        className='w3-container',
+    ),
 ])
 
 redirect = dcc.Location(pathname='/DescriptiveAnalysis', id='_')

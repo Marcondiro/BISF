@@ -3,3 +3,5 @@ Progetto d'esame del corso di **Business Intelligence per i Servizi Finanziari**
 
 Per installare i pacchetti necessari eseguire
 `pip install -r requirements.txt`
+
+Sviluppato e testato con Python 3.8.5

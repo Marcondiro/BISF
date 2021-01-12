@@ -44,6 +44,13 @@ PREDICTION_PERIODS = {
     'L': '2019-12-01',  # 10 mesi
 }
 
-PREDICTION_LIMIT_SECONDS = 5
+PREDICTION_LIMIT_SECONDS = 3
+
+MARKET_INDEX = {
+        'ticker': '^NYA',
+        'label': 'NYSE COMPOSITE (DJ)'
+    }
+
+BUDGET = 5000
 
 DEBUG = True #TODO turn off debug

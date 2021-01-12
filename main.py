@@ -12,6 +12,9 @@ import pandas as pd
 from scipy import stats
 import statsmodels.api as sm
 import pandas_datareader.data as web
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt import risk_models
+from pypfopt import expected_returns
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -52,6 +55,7 @@ simple_returns = simple_returns.dropna()
 cc_returns = np.log(stocks_monthly / stocks_monthly.shift(1))
 cc_returns = cc_returns.dropna()
 
+
 #Predictive analysis
 #Scarico i dati per i periodi n (training) e m (test)
 pred_raw_data = getStocks([s['ticker'] for s in config.STOCKS],
@@ -69,7 +73,7 @@ expire_time = pd.to_datetime("now") + pd.DateOffset(seconds=config.PREDICTION_LI
 best_mse = pd.Series({s: np.inf for s in training_set.columns})
 best_results = pd.Series({s: None for s in training_set.columns})
 for arima_p in range(1, 10):
-    for arima_q in range(0, 10):
+    for arima_q in range(1, 10):
         models = pd.Series({s: sm.tsa.statespace.SARIMAX(pred_raw_data[s],
                                         order=(arima_p, 0, arima_q),
                                         enforce_stationarity=False,
@@ -98,6 +102,37 @@ cc_returns_forecast = [s.predicted_mean for s in forecast]
 cc_returns_forecast = pd.concat(cc_returns_forecast, axis=1)
 cc_returns_forecast.columns = cc_returns.columns
 
+#Portfolio optimization buy&hold L period (no dividends)
+expect_returns = (np.e ** cc_returns_forecast).prod()
+cov_matrix = risk_models.sample_cov(stocks)
+ef = EfficientFrontier(expect_returns, cov_matrix)
+prt_weights = pd.Series(ef.max_sharpe())
+prt_ret, prt_risk, prt_sharpe = ef.portfolio_performance()
+
+buy_prices = stocks.loc[:config.PREDICTION_PERIODS['L'],:].iloc[-1,:]
+buy_stocks_number = np.floor(config.BUDGET * prt_weights / buy_prices)
+prt_principal = (buy_prices*buy_stocks_number).sum()
+prt_real_weights = buy_prices*buy_stocks_number/prt_principal
+
+#Beta
+#Scarico i dati dell'indice
+index = getStocks([config.MARKET_INDEX['ticker']], config.START, config.END)
+index = index.groupby(pd.Grouper(freq='M')).mean()
+index_cc_returns = np.log(index/index.shift(1))
+#rimuovo NA e converto in serie
+index_cc_returns = index_cc_returns.dropna()[index_cc_returns.columns[0]]
+
+def beta(stocks, index, delta_months):
+    beta = pd.DataFrame(columns=stocks.columns)
+    for i in range(delta_months, len(index)):
+        b = {s: stocks[s][i-delta_months:i-1].cov(index[i-delta_months:i-1]) / index[i-delta_months:i-1].var()
+            for s in stocks} 
+        b = pd.Series(b)
+        beta = beta.append(b, ignore_index=True)
+    beta.index = stocks.iloc[delta_months:, 0:0].index
+    return beta
+betas = beta(cc_returns, index_cc_returns, 12)
+
 #Webapp
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
 app.config.suppress_callback_exceptions = True
@@ -114,6 +149,8 @@ def display_page(pathname):
         return webapp.predictive_analysis
     elif pathname.lower() == '/portfoliomanagement':
         return webapp.portfolio_management
+    elif pathname.lower() == '/beta':
+        return webapp.beta
     else:
         return webapp.redirect
 
@@ -260,6 +297,42 @@ def update_forecast_graph(stock, values, confidence):
             showlegend=False,
         ))
     return plot
+#portfolio management
+@app.callback(Output('portfolio-weights-graph', 'figure'), 
+              [Input('portfolio-realweights-checklist', 'value')])
+def update_prt_weights_graph(real_weights):
+    if real_weights == ['True']:
+        df = prt_real_weights
+    else:
+        df = prt_weights
+    df = pd.DataFrame(df, columns=['weight'])
+    df['stock'] = df.index
+    plot = px.pie(df, title='Weights', names='stock', values = 'weight',
+                color_discrete_map=color_map, hole=0.4)
+    return plot
+
+@app.callback(Output('portfolio-details', 'children'), 
+              [Input('url', 'pathname')])
+def update_prt_details(pathname):
+    if pathname.lower() != '/portfoliomanagement': return None
+    return webapp.generate_portfolio_details(
+        config.BUDGET, config.PREDICTION_PERIODS['L'], config.END,
+        prt_principal, (prt_ret-1)*100, prt_risk, prt_sharpe)
+
+#beta
+@app.callback(Output('beta-graph', 'figure'), 
+              [Input('url', 'pathname')])
+def update_beta_graph(pathname):
+    if pathname.lower() != '/beta': return {}
+    plot = px.line(betas, color_discrete_map=color_map)
+    plot.update_layout(
+        title='',
+        yaxis_title=None,
+    )
+    return plot
+
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=config.DEBUG)
