@@ -9,6 +9,8 @@ SECTORS = list(sorted(set(s['sector'] for s in config.STOCKS)))
 css = ['https://www.w3schools.com/w3css/4/w3.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css']
 
+color_map = {s['ticker']: s['color'] for s in config.STOCKS}
+
 layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Header(
@@ -27,7 +29,7 @@ layout = html.Div([
                 href='/PortfolioManagement',
                 className='w3-bar-item w3-button'),
             html.A(children='Beta',
-                href='/beta',
+                href='/Beta',
                 className='w3-bar-item w3-button'),
             ]
         ),

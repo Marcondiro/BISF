@@ -39,12 +39,12 @@ STOCKS = [
     }
 ]
 PREDICTION_PERIODS = {
-    'N': '2009-02-01',  # 80 mesi
+    'N': '2010-10-01',  # 80 mesi
     'M': '2017-06-01',  # 30 mesi
     'L': '2019-12-01',  # 10 mesi
 }
 
-PREDICTION_LIMIT_SECONDS = 3
+PREDICTION_LIMIT_SECONDS = 60
 
 MARKET_INDEX = {
         'ticker': '^NYA',
@@ -54,4 +54,6 @@ MARKET_INDEX = {
 BUDGET = 5000
 FEE = 0.005
 
-DEBUG = True #TODO turn off debug
+DEBUG = False #TODO turn off debug
+
+CACHE_DIR = './stocks_cache/'
