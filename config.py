@@ -52,5 +52,6 @@ MARKET_INDEX = {
     }
 
 BUDGET = 5000
+FEE = 0.005
 
 DEBUG = True #TODO turn off debug

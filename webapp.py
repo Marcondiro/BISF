@@ -291,108 +291,6 @@ predictive_analysis = html.Div([
         ],
         className='w3-cell-row',
     ),
-    html.H2('Forecasting-based trading strategy'),
-    html.Div([
-            html.P(['Budget ', html.Strong('10.000$')]),
-            html.Table([
-                html.Thead([
-                    html.Th('Stock'),
-                    html.Th('Price'),
-                    html.Th('Quantity'),
-                    html.Th('Total price'),
-                    html.Th('Sell Price'),
-                    html.Th('Payoff'),
-                    html.Th('Fee'),
-                    html.Th('Profit'),
-                    html.Th('Return'),
-                ]),
-                html.Tbody([
-                    html.Tr([
-                        html.Th('Taiwan Semiconductor'),
-                        html.Td('55.03'),
-                        html.Td('30'),
-                        html.Td('1650.90'),
-                        html.Td('82.27'),
-                        html.Td('2468.10'),
-                        html.Td('12.34'),
-                        html.Td('804.86'),
-                        html.Td('48.75%', className='w3-pale-green'),
-                    ]),
-                    html.Tr([
-                        html.Th('Nvidia'),
-                        html.Td('224.28'),
-                        html.Td('2'),
-                        html.Td('448.56'),
-                        html.Td('544.42'),
-                        html.Td('1088.84'),
-                        html.Td('5.45'),
-                        html.Td('634,83'),
-                        html.Td('141.53%', className='w3-pale-green'),
-                    ]),
-                    html.Tr([
-                        html.Th('Boeing'),
-                        html.Td('337.13'),
-                        html.Td('10'),
-                        html.Td('3371.30'),
-                        html.Td('167.86'),
-                        html.Td('1678.60'),
-                        html.Td('8.39'),
-                        html.Td('-1701.09'),
-                        html.Td('-50.46%', className='w3-pale-red'),
-                    ]),
-                    html.Tr([
-                        html.Th('Southwest Airlines'),
-                        html.Td('54.56'),
-                        html.Td('20'),
-                        html.Td('1091.20'),
-                        html.Td('37.93'),
-                        html.Td('758.60'),
-                        html.Td('3.79'),
-                        html.Td('-336.39'),
-                        html.Td('-30.83%', className='w3-pale-red'),
-                    ]),
-                    html.Tr([
-                        html.Th('Pfizer'),
-                        html.Td('35.30'),
-                        html.Td('30'),
-                        html.Td('1059.00'),
-                        html.Td('34.16'),
-                        html.Td('1024.80'),
-                        html.Td('5.12'),
-                        html.Td('-39.32'),
-                        html.Td('-3.71%', className='w3-pale-red'),
-                    ]),
-                    html.Tr([
-                        html.Th('Bristol-Myers Squibb'),
-                        html.Td('59.88'),
-                        html.Td('39'),
-                        html.Td('2335.32'),
-                        html.Td('59.35'),
-                        html.Td('2314.65'),
-                        html.Td('11.57'),
-                        html.Td('-32.24'),
-                        html.Td('-1.38%', className='w3-pale-red'),
-                    ]),
-                    html.Tr([
-                        html.Th('Total'),
-                        html.Td(''),
-                        html.Td(''),
-                        html.Td('9956.28'),
-                        html.Td(''),
-                        html.Td('9333.59'),
-                        html.Td('46.67'),
-                        html.Td('-669.35'),
-                        html.Td('-6.72%'),
-                        ],
-                        className='w3-gray'
-                    ),
-                ]),
-            ],
-            className='w3-table w3-bordered'),
-            html.P('Supposing no dividens, transaction costs: 0.5% for sells'),
-        ],
-        className='w3-light-grey w3-container w3-card w3-row'
-    ),
 ])
 
 portfolio_management = html.Div([
@@ -422,6 +320,13 @@ portfolio_management = html.Div([
         ],
         className='w3-cell-row',
     ),
+    html.H2('Investment results'),
+        html.Div([
+            html.Div(id = 'results-table'),
+            html.P('Supposing no dividens, transaction costs: '+ str(config.FEE*100) + '% for sells'),
+        ],
+        className='w3-light-grey w3-container w3-card w3-row'
+    ),
 ])
 
 def generate_portfolio_details(budget, start, end, principal, ret, risk, sharpe):
@@ -435,12 +340,79 @@ def generate_portfolio_details(budget, start, end, principal, ret, risk, sharpe)
         html.P('Sharpe ratio: '+str(round(sharpe, 2))),
     ])
 
+def generate_results_table(data):
+    return html.Table([
+        html.Thead([
+            html.Th('Stock'),
+            html.Th('Price'),
+            html.Th('Quantity'),
+            html.Th('Total price'),
+            html.Th('Sell Price'),
+            html.Th('Payoff'),
+            html.Th('Fee'),
+            html.Th('Profit'),
+            html.Th('Return'),
+        ]),
+        html.Tbody(
+            [html.Tr([
+                html.Th(s),
+                html.Td(round(data[s][0], 2)),
+                html.Td(round(data[s][1], 0)),
+                html.Td(round(data[s][0]*data[s][1], 2)),
+                html.Td(round(data[s][2], 2)),
+                html.Td(round(data[s][2]*data[s][1], 2)),
+                html.Td(round(data[s][2]*data[s][1]*config.FEE, 2)),
+                html.Td(round(data[s][2]*data[s][1]*(1-config.FEE)-data[s][0]*data[s][1], 2)),
+                html.Td([round((data[s][2]*(1-config.FEE)/data[s][0]-1)*100, 2), '%'])
+            ])for s in data]+
+            [html.Tr([
+                html.Th('Total'),
+                html.Td(''),
+                html.Td(''),
+                html.Td(round((data.iloc[0,:]*data.iloc[1,:]).sum(), 2)),
+                html.Td(''),
+                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum(), 2)),
+                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*config.FEE, 2)),
+                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*(1-config.FEE)-
+                        (data.iloc[0,:]*data.iloc[1,:]).sum(), 2)),
+                html.Td([round(((data.iloc[2,:]*data.iloc[1,:]).sum()*(1-config.FEE)/
+                        (data.iloc[0,:]*data.iloc[1,:]).sum()-1)*100, 2), '%']),
+                ],
+                className='w3-gray'
+            )]
+        ),
+    ],
+    className='w3-table w3-bordered')
+
 beta = html.Div([
-    html.H2('Beta 12-months based on '+config.MARKET_INDEX['label']),
+    html.H2('Beta 10-months based on '+config.MARKET_INDEX['label']),
     html.Div(
         [dcc.Graph(id='beta-graph')],
         className='w3-container',
     ),
+    html.H2('CAPM expected returns'),
+    html.Div([
+        html.Div(id = 'capm-table'),
+    ],
+    className='w3-light-grey w3-container w3-card w3-row'
+    ),
 ])
 
-redirect = dcc.Location(pathname='/DescriptiveAnalysis', id='_')
+def generate_capm_table(data):
+    return html.Table([
+        html.Thead([
+            html.Th('Stock'),
+            html.Th('CAPM expected return'),
+            html.Th('Observed return'),
+        ]),
+        html.Tbody(
+            [html.Tr([
+                html.Th(s),
+                html.Td([round(data[s][0]*100-100, 2), '%']),
+                html.Td([round(data[s][1]*100-100, 2), '%']),
+            ])for s in data]
+        ),
+    ],
+    className='w3-table w3-bordered')
+
+redirect = dcc.Location(pathname='/', id='_')

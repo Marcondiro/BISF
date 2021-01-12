@@ -110,9 +110,13 @@ prt_weights = pd.Series(ef.max_sharpe())
 prt_ret, prt_risk, prt_sharpe = ef.portfolio_performance()
 
 buy_prices = stocks.loc[:config.PREDICTION_PERIODS['L'],:].iloc[-1,:]
+buy_prices.name = 'BuyPrice'
 buy_stocks_number = np.floor(config.BUDGET * prt_weights / buy_prices)
+buy_stocks_number.name = 'BuyQuantity'
 prt_principal = (buy_prices*buy_stocks_number).sum()
 prt_real_weights = buy_prices*buy_stocks_number/prt_principal
+sell_prices = stocks.iloc[-1,:]
+sell_prices.name = 'SellPrice'
 
 #Beta
 #Scarico i dati dell'indice
@@ -131,7 +135,10 @@ def beta(stocks, index, delta_months):
         beta = beta.append(b, ignore_index=True)
     beta.index = stocks.iloc[delta_months:, 0:0].index
     return beta
-betas = beta(cc_returns, index_cc_returns, 12)
+betas = beta(cc_returns, index_cc_returns, 10)
+#CAPM expected returns
+market_return = (np.e ** index_cc_returns[config.PREDICTION_PERIODS['L']:config.END]).prod()
+capm_ret = betas.iloc[-1]*(market_return-1.02) + 1.02
 
 #Webapp
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
@@ -319,6 +326,13 @@ def update_prt_details(pathname):
         config.BUDGET, config.PREDICTION_PERIODS['L'], config.END,
         prt_principal, (prt_ret-1)*100, prt_risk, prt_sharpe)
 
+@app.callback(Output('results-table', 'children'), 
+              [Input('url', 'pathname')])
+def update_results_table(pathname):
+    if pathname.lower() != '/portfoliomanagement': return None
+    df = pd.DataFrame([buy_prices, buy_stocks_number, sell_prices])
+    return webapp.generate_results_table(df)
+
 #beta
 @app.callback(Output('beta-graph', 'figure'), 
               [Input('url', 'pathname')])
@@ -331,8 +345,11 @@ def update_beta_graph(pathname):
     )
     return plot
 
-
-
+@app.callback(Output('capm-table', 'children'), 
+              [Input('url', 'pathname')])
+def update_beta_graph(pathname):
+    if pathname.lower() != '/beta': return {}
+    return webapp.generate_capm_table(pd.DataFrame([capm_ret, sell_prices/buy_prices]))
 
 if __name__ == '__main__':
     app.run_server(debug=config.DEBUG)
