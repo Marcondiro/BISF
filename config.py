@@ -54,6 +54,6 @@ MARKET_INDEX = {
 BUDGET = 5000
 FEE = 0.005
 
-DEBUG = False #TODO turn off debug
+DEBUG = False
 
 CACHE_DIR = './stocks_cache/'
