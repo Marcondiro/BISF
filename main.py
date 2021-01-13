@@ -149,10 +149,12 @@ def beta(stocks_r, index_r, delta_months):
     return beta
 betas = beta(cc_returns, index_cc_returns, 10)
 #CAPM expected returns
-market_return = (np.e **
-                index_cc_returns[config.PREDICTION_PERIODS['L']:config.END]
-                ).prod()
-capm_ret = betas.iloc[-1]*(market_return-1.02) + 1.02
+market_returns = index_cc_returns[config.PREDICTION_PERIODS['L']:]
+capm_ret = [betas.tail(len(market_returns))[s] * (market_returns -0.02) + 0.02
+            for s in tickers]
+capm_ret = pd.concat(capm_ret, axis=1)
+capm_ret.columns = tickers
+capm_ret = (np.e ** capm_ret).prod()
 
 #Webapp
 app = dash.Dash(title='BISF Project', external_stylesheets=webapp.css)
@@ -384,5 +386,5 @@ def update_beta_graph(pathname):
     df = pd.DataFrame([capm_ret, sell_prices/buy_prices])
     return webapp.generate_capm_table(df)
 
-if __name__ == '__main__':
-    app.run_server(debug=config.DEBUG)
+#if __name__ == '__main__':
+#    app.run_server(debug=config.DEBUG)
