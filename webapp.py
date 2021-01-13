@@ -1,10 +1,12 @@
-from dash_html_components.Thead import Thead
+#config
+from dash_html_components.Tbody import Tbody
 import config
 
 import dash_html_components as html
 import dash_core_components as dcc
 
-SECTORS = list(sorted(set(s['sector'] for s in config.STOCKS)))
+stocks = [s['ticker'] for s in config.STOCKS]
+sectors = list(sorted(set(s['sector'] for s in config.STOCKS)))
 
 css = ['https://www.w3schools.com/w3css/4/w3.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css']
@@ -13,9 +15,7 @@ color_map = {s['ticker']: s['color'] for s in config.STOCKS}
 
 layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Header(
-        className='w3-bar w3-blue',
-        children=[
+    html.Header([
             html.A(children=html.I(className='fa fa-home'),
                 href='/',
                 className='w3-bar-item w3-button'),
@@ -31,42 +31,53 @@ layout = html.Div([
             html.A(children='Beta',
                 href='/Beta',
                 className='w3-bar-item w3-button'),
-            ]
+            ],
+            className='w3-bar w3-blue',
         ),
-    html.Div(id='page-content',
+    html.Div(
+        id='page-content',
         className='w3-container',
         style={'marginBottom': '50px'},),
     html.Footer(
         children=[
-            html.Small('Stocks: ' + ' '.join([s['ticker'] for s in config.STOCKS])),
+            html.Small('Stocks: ' + ' '.join(stocks)),
             html.Br(),
-            html.Small('From ' + config.START + ' To ' + config.END)
+            html.Small('From '+config.START+' To '+config.END)
         ],
         className='w3-container w3-blue-grey',
-        style={'bottom': 0, 'position': 'fixed', 'width': '100%'}
+        style={'bottom':0, 'position':'fixed', 'width':'100%'}
     ),
 ])
 
 home = html.Div([
     html.H1('Summary'),
-    dcc.Dropdown(id='home-dropdown',
-        options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
-        value=[s['ticker'] for s in config.STOCKS],
-        multi=True),
+    dcc.Dropdown(
+        id='home-dropdown',
+        options=[{'label': s['label'], 'value': s['ticker']}
+                for s in config.STOCKS],
+        value=stocks,
+        multi=True
+    ),
     dcc.Graph(id='home-graph'),
     html.Div([
         html.H2('Choosen stocks'),
-        html.Table(
-            [html.Tr([
-                html.Th('Ticker'),
-                html.Th('Name'),
-                html.Th('Industrial sector'),
-            ])] +
-            [html.Tr([
-                html.Td(s['ticker']),
-                html.Td(s['label']),
-                html.Td(s['sector']),
-            ])for s in config.STOCKS],
+        html.Table([
+            html.Thead(
+                html.Tr([
+                    html.Th('Ticker'),
+                    html.Th('Name'),
+                    html.Th('Industrial sector'),
+                ])
+            ),
+            html.Tbody(
+                [html.Tr([
+                    html.Td(s['ticker']),
+                    html.Td(s['label']),
+                    html.Td(s['sector']),
+                    ],
+                    className='w3-hover-light-gray'
+                )for s in config.STOCKS]
+            )],
             className='w3-table w3-bordered'
         )],
         className='w3-container'
@@ -100,7 +111,7 @@ descriptive_analysis = html.Div([
             html.Br(),
             dcc.Dropdown(
                 id='returns-sector-dropdown',
-                options=[{'label': s, 'value': s} for s in SECTORS]
+                options=[{'label': s, 'value': s} for s in sectors]
             ),
             ],
             className='w3-light-grey w3-container w3-cell w3-card',
@@ -121,7 +132,8 @@ descriptive_analysis = html.Div([
             html.H5('Stock'),
             dcc.Dropdown(
                 id='diagnostic-stock-dropdown',
-                options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
+                options=[{'label': s['label'], 'value': s['ticker']}
+                        for s in config.STOCKS],
                 value=config.STOCKS[0]['ticker']
             ),
             html.H5('Histogram bins'),
@@ -193,8 +205,9 @@ descriptive_analysis = html.Div([
             html.H3('Settings'),
             dcc.Checklist(
                 id='scatterplot-stocks-checklist',
-                options=[{'label': ' '+s['label'], 'value': s['ticker']} for s in config.STOCKS],
-                value=[s['ticker'] for s in config.STOCKS][0:2],
+                options=[{'label': ' '+s['label'], 'value': s['ticker']}
+                        for s in config.STOCKS],
+                value=stocks[0:2],
                 inputClassName='w3-check',
                 labelStyle={'display': 'block'},
                 className='w3-container',
@@ -212,25 +225,27 @@ descriptive_analysis = html.Div([
 
 def generate_descriptive_statistics_table(data):
     table_head = [
-        html.Thead(html.Tr([
-            html.Th('Stock'),
-            html.Th('Mean'),
-            html.Th('Variance'),
-            html.Th('Standard deviation'),
-            html.Th('Skewness'),
-            html.Th('Kurtosis'),
-        ]))]
+        html.Thead(
+            html.Tr([
+                html.Th('Stock'),
+                html.Th('Mean'),
+                html.Th('Variance'),
+                html.Th('Standard deviation'),
+                html.Th('Skewness'),
+                html.Th('Kurtosis'),
+            ])
+        )]
     table_body = [
         html.Tr([
-                html.Td(d['stock']),
-                html.Td(d['mean']),
-                html.Td(d['variance']),
-                html.Td(d['standard_deviation']),
-                html.Td(d['skewness']),
-                html.Td(d['kurtosis']),
+            html.Td(d['stock']),
+            html.Td(d['mean']),
+            html.Td(d['variance']),
+            html.Td(d['standard_deviation']),
+            html.Td(d['skewness']),
+            html.Td(d['kurtosis']),
             ],
             className='w3-hover-light-gray')
-        for index, d in data.iterrows()
+        for i, d in data.iterrows()
     ]
     table_body = [html.Tbody(table_body)]
     table = html.Table(table_head+table_body, className='w3-table w3-bordered')
@@ -239,8 +254,11 @@ def generate_descriptive_statistics_table(data):
 def generate_correlation_matrix_table(data):
     table_head = [
         html.Thead(
-            html.Tr([html.Th('')]+
-                [html.Th(c) for c in data.columns]))]
+            html.Tr(
+                [html.Th('')]+
+                [html.Th(c) for c in data.columns]
+            )
+        )]
     table_body = [
         html.Tr(
             [html.Th(index)] +
@@ -260,7 +278,8 @@ predictive_analysis = html.Div([
             html.H3('Settings'),
             dcc.Dropdown(
                 id='forecast-stock-dropdown',
-                options=[{'label': s['label'], 'value': s['ticker']} for s in config.STOCKS],
+                options=[{'label': s['label'], 'value': s['ticker']}
+                        for s in config.STOCKS],
                 value=config.STOCKS[0]['ticker'],
             ),
             html.Br(),
@@ -325,7 +344,8 @@ portfolio_management = html.Div([
     html.H2('Investment results'),
         html.Div([
             html.Div(id = 'results-table'),
-            html.P('Supposing no dividens, transaction costs: '+ str(config.FEE*100) + '% for sells'),
+            html.P('Supposing no dividens, transaction costs: '+
+                str(config.FEE*100) + '% for sells'),
         ],
         className='w3-light-grey w3-container w3-card w3-row'
     ),
@@ -364,8 +384,10 @@ def generate_results_table(data):
                 html.Td(round(data[s][2], 2)),
                 html.Td(round(data[s][2]*data[s][1], 2)),
                 html.Td(round(data[s][2]*data[s][1]*config.FEE, 2)),
-                html.Td(round(data[s][2]*data[s][1]*(1-config.FEE)-data[s][0]*data[s][1], 2)),
-                html.Td([round((data[s][2]*(1-config.FEE)/data[s][0]-1)*100, 2), '%'])
+                html.Td(round(data[s][2]*data[s][1]*(1-config.FEE)-
+                        data[s][0]*data[s][1], 2)),
+                html.Td([round((data[s][2]*(1-config.FEE)/data[s][0]-1)*100, 2)
+                        , '%'])
             ])for s in data]+
             [html.Tr([
                 html.Th('Total'),
@@ -374,11 +396,15 @@ def generate_results_table(data):
                 html.Td(round((data.iloc[0,:]*data.iloc[1,:]).sum(), 2)),
                 html.Td(''),
                 html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum(), 2)),
-                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*config.FEE, 2)),
-                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*(1-config.FEE)-
-                        (data.iloc[0,:]*data.iloc[1,:]).sum(), 2)),
-                html.Td([round(((data.iloc[2,:]*data.iloc[1,:]).sum()*(1-config.FEE)/
-                        (data.iloc[0,:]*data.iloc[1,:]).sum()-1)*100, 2), '%']),
+                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*config.FEE,
+                            2)),
+                html.Td(round((data.iloc[2,:]*data.iloc[1,:]).sum()*
+                            (1-config.FEE)-
+                            (data.iloc[0,:]*data.iloc[1,:]).sum(), 2)),
+                html.Td([round(((data.iloc[2,:]*data.iloc[1,:]).sum()*
+                            (1-config.FEE)/
+                            (data.iloc[0,:]*data.iloc[1,:]).sum()-1)*100, 2),
+                            '%']),
                 ],
                 className='w3-gray'
             )]
