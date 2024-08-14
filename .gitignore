@@ -1,3 +1,4 @@
 .vscode/*
 stocks_cache/*
 __pycache__/*
+.venv/*
